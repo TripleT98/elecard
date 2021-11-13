@@ -25,16 +25,14 @@ let StyledArrow = styled.div`
   clip-path: polygon(5%  40%, 27% 40%, 50% 57%, 73% 40%, 95% 40%, 50% 75%);
   ${({direction})=>{
     switch (direction){
-      case "top":{
+      case "top":
            return css`
            animation: ${rotateAnimation_top} .2s ease-in forwards;
-           `
-      };
-      case "bot":{
+           `;
+      case "bot":
         return css`
         animation: ${rotateAnimation_bot} .2s ease-out forwards;
-        `
-      };
+        `;
       default: return "";
     }
    }
@@ -53,7 +51,7 @@ function Arrow(props){
   let [direction, changeDir] = useState("");
   let ref = useRef();
   return(
-    <Container  onClick={(e)=>{props?.onClick?.();direction=="top"?changeDir("bot"):changeDir("top");}}><StyledArrow ref={ref} direction={direction}></StyledArrow></Container>
+    <Container  onClick={(e)=>{props?.onClick?.();direction==="top"?changeDir("bot"):changeDir("top");}}><StyledArrow ref={ref} direction={direction}></StyledArrow></Container>
   )
 }
 

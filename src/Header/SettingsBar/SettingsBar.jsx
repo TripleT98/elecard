@@ -1,5 +1,4 @@
 import styled,{keyframes, css} from "styled-components";
-import {useRef, useEffect, memo} from "react";
 import SortMenu from "./../SortMenu/SortMenu";
 
 let moveRight = keyframes`
@@ -8,7 +7,7 @@ let moveRight = keyframes`
   opacity: 1;
 }
 100%{
-  right: -180px;
+  right: -200px;
   opacity: 0;
   display: none;
 }
@@ -17,7 +16,7 @@ let moveRight = keyframes`
 let moveLeft = keyframes`
 0%{
   display: block;
-  right: -180px;
+  right: -200px;
   opacity: 0;
 }100%{
   right: 0px;
@@ -66,7 +65,7 @@ function SettingsBar(props){
  },[props.isOpen]);
  console.log(1);*/
   return(
-    <StyledSettingsBar isOpen={props.isOpen} duration={props.duration}><SortMenu/></StyledSettingsBar>
+    <StyledSettingsBar isOpen={props.isOpen} duration={props.duration}><SortMenu /></StyledSettingsBar>
   )
 }
 

@@ -149,7 +149,7 @@ function cardReducer(state = initialState, action){
     };
     case CHANGE_VIEW:{
       let map = new Map();
-      let treeViewCards = state.cards.forEach((e,i)=>{
+      state.cards.forEach((e,i)=>{
         if(map.get(e.category)){
           map.set(e.category, map.get(e.category).concat([e]));
         }else{

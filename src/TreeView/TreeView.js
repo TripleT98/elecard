@@ -1,7 +1,7 @@
-import styled,{scc} from "styled-components";
+import styled from "styled-components";
 import TreeChild from "./Block/Block";
 import {bluring} from "./../Main/Card/Card";
-import {useState, useRef} from "react";
+import {useState} from "react";
 import {connect} from "react-redux";
 
 let StyledTreeViewContainer = styled.div`
@@ -49,7 +49,7 @@ function TreeViewContainer(props){
          <Container>
             <TreeChild openChild={openFirstChild}/>
          </Container>
-         {firstChildState &&  <FirstChildContainer>{props.categories.map((e,i)=>{return <TreeChild isCategory={true} baseURL={props.baseURL} cards={props.treeViewCards.get(e)}>{e[0].toUpperCase() + e.slice(1, e.length)}</TreeChild>})}</FirstChildContainer>}
+         {firstChildState &&  <FirstChildContainer key={"container"}>{props.categories.map((e,i)=>{return <TreeChild key={"category_"+e} isCategory={true} baseURL={props.baseURL} cards={props.treeViewCards.get(e)}>{e[0].toUpperCase() + e.slice(1, e.length)}</TreeChild>})}</FirstChildContainer>}
       </StyledTreeViewContainer>
     )
 }

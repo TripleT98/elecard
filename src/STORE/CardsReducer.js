@@ -10,19 +10,6 @@ let SORT_BY_PARAMS = "SORT_BY_PARAMS";
 let RESET_SORT = "RESET_SORT";
 let CHANGE_VIEW = "CHANGE_VIEW";
 
-class SortVars{
-  constructor({params, subjects}){
-  this.sortVariants = {
-    sortedCards:[],
-    bySubject:subjects,
-    byParams:params,
-    currentSortSubject: "",
-    currentSortParam: "",
-    isSubjectSortOn: false,
-    isParamsSortOn: false
-  }
- }
-}
 
 let initialState = {
      baseURL:"http://contest.elecard.ru/frontend_data/",
@@ -37,14 +24,12 @@ let initialState = {
      currentStack:[],
      amountOfCards:0,
      indexOfLastCards: 0,
+     amountOfPages: 0,
+     isSorted: false,
+     exchange_cards_index:0,
      sortVariants:{
-       sortedCards:[],
        bySubject:[],
-       byParams:[],
-       currentSortSubject: "",
-       currentSortParam: "",
-       isSubjectSortOn: false,
-       isParamsSortOn: false
+       byParams:[]
      }
 }
 
@@ -53,6 +38,7 @@ function cardReducer(state = initialState, action){
     case SET_ALL_CARDS:{
       let subjects = Array.from(action.data.reduce((acc,elem,i)=>{if(!acc.has(elem.category)){acc.add(elem.category)};return acc},new Set()));
       let cards = action.data.filter((e,i)=>!window.localStorage.getItem(e.timestamp));
+      let amountOfPages = Math.ceil(cards.length/state.cardsAmountOnOnePage);
       //let num = state.cardsAmountOnOnePage*state.currentPage - 1;
       //console.log(num);
       //let cardsCopy = [...action.data];
@@ -70,39 +56,40 @@ function cardReducer(state = initialState, action){
         let filesize = (e.filesize/(8*1024)).toFixed(2) + " kB";
         let category = e.category[0].toUpperCase() + e.category.slice(1,e.category.length);
         return {image:e.image, fullDate, filesize, category, timestamp: e.timestamp};
-      }), amountOfCards: action.data.length, indexOfLastCards: (state.currentPage*state.cardsAmountOnOnePage) - 1,sortVariants:{...state.sortVariants, bySubject:subjects,byParams:["filesize", "timestamp"]}, originCards: action.data};
+      }), amountOfCards: action.data.length, indexOfLastCards: (state.currentPage*state.cardsAmountOnOnePage) - 1,sortVariants:{...state.sortVariants, bySubject:subjects,byParams:["filesize", "timestamp"]}, originCards: action.data, amountOfPages};
     };
     case SET_PAGE:{
       let cards = [];
-      if(state.sortVariants.isSubjectSortOn || state.sortVariants.isParamSortOn){
+      if(state.isSorted){
         let page = action.page||state.currentPage;
         let num = state.cardsAmountOnOnePage*page - state.cardsAmountOnOnePage;
-
+        let newSortedCards = state.sortedCards.filter((e,i)=>window.localStorage.getItem(e.timestamp)?false:true)
         for(let i = num, j = 0; j < state.cardsAmountOnOnePage; i++, j++){
-           if(state.sortVariants.sortedCards[i] == undefined){break};
-           if(window.localStorage.getItem(state.sortVariants.sortedCards[i].timestamp)){
+           if(newSortedCards[i] === undefined){break};
+           if(window.localStorage.getItem(newSortedCards[i].timestamp)){
+             console.log("banned");
              j--;
              continue;
            }else{
-             cards.push(state.sortVariants.sortedCards[i])
+             cards.push(newSortedCards[i])
            };
         }
       }else{
       let page = action.page||state.currentPage;
       let num = state.cardsAmountOnOnePage*page - state.cardsAmountOnOnePage;
-
+      let newCards = state.cards.filter((e,i)=>window.localStorage.getItem(e.timestamp)?false:true);
       for(let i = num, j = 0; j < state.cardsAmountOnOnePage; i++, j++){
-         if(state.cards[i] == undefined){break};
-         if(window.localStorage.getItem(state.cards[i].timestamp)){
+         if(newCards[i] === undefined){break};
+         if(window.localStorage.getItem(newCards[i].timestamp)){
            j--;
            continue;
          }else{
-           cards.push(state.cards[i])
+           cards.push(newCards[i])
          };
       }
     }
 
-      return {...state, currentPage: action.page||state.currentPage, isFetching: false, currentStack: cards.map((e,i)=>{
+      return {...state,exchange_cards_index:0, currentPage: action.page||state.currentPage, isFetching: false, currentStack: cards.map((e,i)=>{
         let date = new Date(e.timestamp);
         let year = date.getFullYear();
         let day = date.getDate();
@@ -113,22 +100,35 @@ function cardReducer(state = initialState, action){
         return {image:e.image, fullDate, filesize, category , timestamp: e.timestamp};
       })};
     };
-    case SET_FETCH:{
+    case SET_FETCH:
       return {...state, isFetching: true};
-    };
     case BAN_THE_CARD:{
       window.localStorage.setItem(action.id, "banned");
-      return state;
+      //let stack = state.currentStack.filter((e,i)=>{if(e.timestamp == action.id){return false};return true});
+      let pages = Math.ceil((state.amountOfCards - 1)/state.cardsAmountOnOnePage);
+
+      /*let stack = [...state.currentStack];
+      let index = null;
+      for(let i=0; i < stack.length; i++){
+        if(stack[i].timestamp === action.id){
+          index = i;
+        }
+      }
+      let exchange_cards_index = state.exchange_cards_index + (state.cardsAmountOnOnePage*state.currentPage);
+      stack.splice(index,1,state.isSorted?state?.sortedCards?.[exchange_cards_index]:state?.cards?.[exchange_cards_index]);
+      exchange_cards_index = state.exchange_cards_index + 1;*/
+      return {...state, amountOfCards:state.amountOfCards - 1, amountOfPages: pages};
     };
     case UNBAN_ALL:{
       window.localStorage.clear();
-      return {...state, bannedCards:[], cards: state.originCards}
+      let amountOfCards = state.originCards.length;
+      let amountOfPages = amountOfCards/state.cardsAmountOnOnePage;
+      return {...state, cards: state.originCards, amountOfCards, amountOfPages}
 
     };
     case SORT_BY_SUBJECT:{
-      if(!action.subject){return {...state, sortVariants:new SortVars({params:state.sortVariants.byParams, subjects:state.sortVariants.bySubject}).sortVariants}};
-      let sorted = state.cards.filter((e,i)=>e.category==action.subject&&!window.localStorage.getItem(e.timestamp)?true:false);
-      return {...state, sortVariants:{...state.sortVariants, currentSortSubject: action.subject, isSubjectSortOn: true, sortedCards: sorted },currentPage: 1, amountOfCards: sorted.length}
+      let sortedCards = state.cards.reduce((acc,el,i)=>{if(el.category === action.subject){acc.unshift(el)}else{acc.push(el)};return acc},[])
+      return {...state, sortedCards ,currentPage: 1, isSorted: true}
     };
     case SORT_BY_PARAMS:{
       let sorted;
@@ -136,20 +136,15 @@ function cardReducer(state = initialState, action){
         let filtered = arr.reduce((acc,e,i)=>{if(!window.localStorage.getItem(e.timestamp)){acc.push(e)};return acc},[])
         return filtered.sort((a,b)=>{return a[param]-b[param]});
       }
-      if(state.sortVariants.sortedCards.length == 0){
       sorted = sorter(state.cards, action.param);
-   }else{
-      sorted = sorter(state.sortVariants.sortedCards, action.param);
-   }
 
-      return {...state, sortVariants:{...state.sortVariants, currentSortSubject: action.subject, isParamSortOn: true, sortedCards: sorted},currentPage: 1, amountOfCards:sorted.length}
+      return {...state,currentPage: 1,sortedCards: sorted, isSorted: true}
     };
-    case RESET_SORT:{
-      return {...state, sortVariants:new SortVars({params:state.sortVariants.byParams, subjects:state.sortVariants.bySubject}).sortVariants, currentPage:1, amountOfCards:state.cards.length}
-    };
+    case RESET_SORT:
+      return {...state, currentPage:1, isSorted: false}
     case CHANGE_VIEW:{
       let map = new Map();
-      let treeViewCards = state.cards.forEach((e,i)=>{
+      state.cards.forEach((e,i)=>{
         if(map.get(e.category)){
           map.set(e.category, map.get(e.category).concat([e]));
         }else{
@@ -250,16 +245,16 @@ export function resetSortThunk(dispatch){
   setTimeout(()=>{dispatch(resetSortAC());dispatch(setPageAC(1))},500);
 }
 
-export function sortThunkCreator({param, subject}){
+export function sortThunkCreator(param){
   return function(dispatch){
-    if(!param && !subject){return true}
+    if(!param){return true};
     dispatch(setFetchAC());
-    setTimeout(()=>{
-      dispatch(sortBySubjectAC(subject))
-    if(param){
-      dispatch(sortByParamsAC(param))
-    };
-    dispatch(setPageAC());},500);
+    if(param==="timestamp" || param==="filesize"){
+      setTimeout(()=>{dispatch(sortByParamsAC(param));dispatch(setPageAC())},200);
+    }else{
+      setTimeout(()=>{dispatch(sortBySubjectAC(param));;dispatch(setPageAC())},200);
+    }
+
   }
 }
 
@@ -270,5 +265,11 @@ export function setPageThunk(page){
   }
 }
 
+export function banTheCardThunk(id,page){
+  return function(dispatch){
+    dispatch(banTheCardAC(id));
+    dispatch(setPageAC(page));
+  }
+}
 
 export default cardReducer;

@@ -75,7 +75,7 @@ function TreeChild(props){
           {props.children||"Categories"}
        </Container>
       <ImagesWrap isOpen={isOpen} isCategory={props.isCategory}>
-          {props?.cards?.map((e,i)=>{return <StyledImgCont><StyledThumbImg src={`${props.baseURL}${e.image}`} /></StyledImgCont>})}
+          {props?.cards?.map((e,i)=>{return <StyledImgCont key={"img_container_" + i}><StyledThumbImg src={`${props.baseURL}${e.image}`} key={i + "_" + e.image}/></StyledImgCont>})}
       </ImagesWrap>
       <BigImgContainer status={bigImgState.status}>
         <StyledImgCont big>

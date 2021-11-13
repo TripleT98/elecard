@@ -19,13 +19,14 @@ let StyledUnbanButton = styled.button`
      background-color: rgb(109, 176, 179);
      box-shadow: none;
      cursor: auto;
+     opacity: 0;
    }
 `
 
 
 function UnbanButton(props){
   return (
-    <StyledUnbanButton onClick={()=>{props?.clickFunc?.()}} disabled={props.isDisabled}>{props.children}</StyledUnbanButton>
+    <StyledUnbanButton isBlockView={props.isBlockView} onClick={()=>{props?.clickFunc?.()}} disabled={props.isDisabled || props.isBlockView==="treeView"}>{props.children}</StyledUnbanButton>
   )
 }
 

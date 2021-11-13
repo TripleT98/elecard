@@ -25,8 +25,8 @@ function ChangeView(props){
 
   return(
     <StyledChangeViewForm>
-        <StyledSpan>BLOCK VIEW</StyledSpan><StyledInput value="block" type="radio" checked={value=="block"?true:false} onChange={()=>{onChangeHandler("block")}} />
-        <StyledSpan>TREE VIEW</StyledSpan><StyledInput value="treeView" type="radio" checked={value=="treeView"?true:false}  onChange={()=>{onChangeHandler("treeView")}} />
+        <StyledSpan>BLOCK VIEW</StyledSpan><StyledInput value="block" type="radio" checked={value==="block"?true:false} onChange={()=>{onChangeHandler("block")}} />
+        <StyledSpan>TREE VIEW</StyledSpan><StyledInput value="treeView" type="radio" checked={value==="treeView"?true:false}  onChange={()=>{onChangeHandler("treeView")}} />
     </StyledChangeViewForm>
   )
 }

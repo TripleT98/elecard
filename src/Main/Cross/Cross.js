@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import {useRef, useState} from "react";
-import {banTheCardAC} from "./../../STORE/CardsReducer";
+import {useState} from "react";
+import {banTheCardThunk} from "./../../STORE/CardsReducer";
 import {connect} from "react-redux";
 
 let StyledCross = styled.div`
@@ -26,20 +26,20 @@ transition-duration: .5s;
 function Cross(props){
   let [isHovered, hover] = useState(false);
   return (
-    <StyledButtonContainer onClick={()=>{props?.banTheCard?.(props.id);props.closeTheCard?.();if(!props.id){return false};props.blockToBan.current.classList += " banned"}} onMouseEnter={()=>{hover(true)}} onMouseLeave={()=>{hover(false)}} isHovered={isHovered}><StyledCross isHovered={isHovered}/></StyledButtonContainer>
+    <StyledButtonContainer onClick={()=>{props?.banTheCard?.(props.id, props.page);props.closeTheCard?.();if(!props.id){return false};props.blockToBan.current.classList += " banned"}} onMouseEnter={()=>{hover(true)}} onMouseLeave={()=>{hover(false)}} isHovered={isHovered}><StyledCross isHovered={isHovered}/></StyledButtonContainer>
   )
 }
 
 function stateToProps(state){
   return {
-
+    page: state.forCards.currentPage,
   }
 }
 
 function dispatchToProps(dispatch){
   return {
-     banTheCard: function(key){
-       dispatch(banTheCardAC(key))
+     banTheCard: function(key, page){
+       dispatch(banTheCardThunk(key, page))
      }
   }
 }

@@ -1,5 +1,5 @@
-import styled,{keyframes, css} from "styled-components";
-import {useRef} from "react";
+import styled,{keyframes} from "styled-components";
+import {useRef, memo} from "react";
 import Cross from "./../Cross/Cross";
 
 export let bluring = keyframes`
@@ -13,11 +13,13 @@ export let bluring = keyframes`
 
 let banned = keyframes`
 0%{
-  opacity:1;
+  opacity:0;
+}
+50%{
+  opacity:0;
 }
 100%{
-  opacity:0;
-  display: none;
+  opacity:1;
 }
 `
 
@@ -45,6 +47,7 @@ position: relative;
 top: 0px;
 left: 0px;
 width: max-content;
+height: max-content;
 background: linear-gradient(45deg, white 70%, grey);
 box-shadow: -1px 1px 10px grey;
 margin: 30px;
@@ -54,8 +57,9 @@ animation: ${bluring} .5s linear;
 display: flex;
 justify-content: center;
 flex-direction: column;
+transition-duration: 1s;
 &.banned{
-  animation: ${banned} .5s linear forwards;
+  animation: ${banned} 1s linear forwards;
 }
 `
 
@@ -83,6 +87,7 @@ function Card(props){
 }
 
 function Cards(props){
+
   let cards = props.stackOfCards.map((e,i)=>{return <Card {...e} key={i} baseURL={props.baseURL}/>})
   return (
     <StyledCards>
@@ -91,4 +96,4 @@ function Cards(props){
   )
 }
 
-export default Cards;
+export default memo(Cards);
